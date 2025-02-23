@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "update-prices": "ts-node src/scripts/updatePrices.ts"
+  },
   "devDependencies": {
     "ts-node": "^10.9.2"
   },
