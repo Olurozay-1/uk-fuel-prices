@@ -1,6 +1,6 @@
-import { FuelPriceFetcher } from '../lib/fuelPriceFetcher';
-import { supabase } from '../lib/supabase';
-import { Station } from '../types/index';
+import { FuelPriceFetcher } from '../lib/fuelPriceFetcher.js';
+import { supabase } from '../lib/supabase.js';
+import { Station } from '../types/index.js';
 
 async function calculateNationalAverages(stations: Station[]) {
     const prices = {
