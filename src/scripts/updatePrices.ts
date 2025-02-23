@@ -18,16 +18,14 @@ function reformatDmyDate(str: string): string {
   const match = str.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2}:\d{2})$/);
   if (!match) return str; // Fallback, if it doesn't match exactly
   const [, day, month, year, time] = match;
-  // Return in a Postgres-friendly format
   return `${year}-${month}-${day} ${time}`;
 }
 
 /**
  * Reformat known date fields in the station object (or top-level).
- * In your JSON, the field is "last_updated" (NOT "last_update").
  */
 function reformatDates(station: any): void {
-  const dateFields = ['last_updated']; // Add more if needed
+  const dateFields = ['last_updated'];
 
   for (const field of dateFields) {
     if (station[field] && typeof station[field] === 'string' && isDmyDateString(station[field])) {
@@ -39,20 +37,33 @@ function reformatDates(station: any): void {
 }
 
 /**
- * Convert location strings to floats and produce the "SRID=4326;POINT(... ...)" format.
+ * Convert location strings to both JSON and PostGIS formats.
  */
 function formatLocation(station: any): void {
   if (!station.location) return;
-  
-  // Some stations have location as { longitude: "123.456", latitude: "45.678" }
-  // Convert them to numbers if needed
+
   const lon = parseFloat(station.location.longitude);
   const lat = parseFloat(station.location.latitude);
-  
-  // PostGIS-compatible point (lon lat)
-  station.location = `SRID=4326;POINT(${lon} ${lat})`;
+
+  if (Number.isNaN(lon) || Number.isNaN(lat)) {
+    console.warn(`Skipping station ${station.site_id} due to invalid coordinates`);
+    station.geom = null;
+    station.location_json = { coordinates: [] };
+    return;
+  }
+
+  // Store geometry for spatial queries
+  station.geom = `SRID=4326;POINT(${lon} ${lat})`;
+
+  // Store JSON for frontend access
+  station.location_json = {
+    coordinates: [lon, lat],
+  };
 }
 
+/**
+ * Calculate national averages for fuel prices.
+ */
 async function calculateNationalAverages(stations: Station[]) {
   const prices = {
     E5: [] as number[],
@@ -82,41 +93,34 @@ async function calculateNationalAverages(stations: Station[]) {
   };
 }
 
+/**
+ * Fetch data, format it, and update the Supabase database.
+ */
 export async function updateDatabase() {
   const fetcher = new FuelPriceFetcher();
 
   try {
     console.log('Starting price update...');
     const data = await fetcher.fetchAllRetailers();
-    
-    // 'data' might have a top-level "last_updated" field
-    // If you want to store that globally somewhere, reformat it here:
+
+    // Convert top-level last_updated
     reformatDates(data);
 
-    // If data.stations includes "last_updated" for each station, you can do that below too.
     const stations: Station[] = data.stations;
 
-    // Deduplicate by site_id to avoid "ON CONFLICT DO UPDATE" errors
-    const uniqueStations = Array.from(
-      new Map(stations.map((s) => [s.site_id, s])).values()
-    );
+    // Deduplicate by site_id
+    const uniqueStations = Array.from(new Map(stations.map(s => [s.site_id, s])).values());
 
     // Upsert in batches
     const batchSize = 100;
     for (let i = 0; i < uniqueStations.length; i += batchSize) {
       const batch = uniqueStations.slice(i, i + batchSize);
 
-      // Reformat each station's date fields and location
+      // Reformat each station's data
       const formattedBatch = batch.map((station) => {
-        // Convert location to SRID=4326
-        formatLocation(station);
-        
-        // If each station also has "last_updated", reformat it
         reformatDates(station);
-
-        return {
-          ...station,
-        };
+        formatLocation(station);
+        return station;
       });
 
       const { error } = await supabase
