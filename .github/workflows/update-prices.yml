@@ -6,16 +6,23 @@ on:
   workflow_dispatch:      # Allows manual triggering
 
 jobs:
-  update-prices:
+  update_prices:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18
-      - run: npm ci
-      - run: npx ts-node -r tsconfig-paths/register src/scripts/updatePrices.ts
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run updatePrices script
+      run: npx ts-node -r tsconfig-paths/register src/scripts/updatePrices.ts
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
