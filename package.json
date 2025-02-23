@@ -1,11 +1,12 @@
 {
   "type": "module",
   "scripts": {
-    "update-prices": "npx ts-node --loader ts-node/esm -r tsconfig-paths/register src/scripts/updatePrices.ts"
+    "update-prices": "npx tsx src/scripts/updatePrices.ts"
   },
   "devDependencies": {
     "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.2.0"
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.19.3"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.1",
