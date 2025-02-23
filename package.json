@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "scripts": {
     "update-prices": "ts-node src/scripts/updatePrices.ts"
   },
