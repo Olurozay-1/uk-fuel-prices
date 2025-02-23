@@ -3,14 +3,65 @@ import { Station, RetailerSource } from '../types';
 
 const RETAILERS: RetailerSource[] = [
     {
-        name: 'RONTEC',
-        url: 'https://www.rontec-servicestations.co.uk/fuel-prices/data/fuel_prices_data.json'
+        name: 'APPLEGREEN',
+        url: 'https://applegreenstores.com/fuel-prices/data.json'
+    },
+    {
+        name: 'ASCONA',
+        url: 'https://fuelprices.asconagroup.co.uk/newfuel.json'
+    },
+    {
+        name: 'ASDA',
+        url: 'https://storelocator.asda.com/fuel_prices_data.json'
+    },
+    {
+        name: 'BP',
+        url: '	https://www.bp.com/en_gb/united-kingdom/home/fuelprices/fuel_prices_data.json'
     },
     {
         name: 'ESSO',
         url: 'https://fuelprices.esso.co.uk/latestdata.json'
+    },
+    {
+        name: 'JET',
+        url: 'https://jetlocal.co.uk/fuel_prices_data.json'
+    },
+    {
+        name: 'KARAN',
+        url: 'https://api2.krlmedia.com/integration/live_price/krl'
+    },
+    {
+        name: 'MORRISONS',
+        url: 'https://www.morrisons.com/fuel-prices/fuel.json'
+    },
+    {
+        name: 'MOTO',
+        url: '	https://moto-way.com/fuel-price/fuel_prices.json'
+    },
+    {
+        name: 'MFG',
+        url: 'https://fuel.motorfuelgroup.com/fuel_prices_data.json'
+    },
+    {
+        name: 'RONTEC',
+        url: 'https://www.rontec-servicestations.co.uk/fuel-prices/data/fuel_prices_data.json'
+    },
+    {
+        name: 'SAINSBURYS',
+        url: '	https://api.sainsburys.co.uk/v1/exports/latest/fuel_prices_data.json'
+    },
+    {
+        name: 'SGN',
+        url: '	https://www.sgnretail.uk/files/data/SGN_daily_fuel_prices.json'
+    },
+    {
+        name: 'SHELL',
+        url: '	https://www.shell.co.uk/fuel-prices-data.html'
+    },
+    {
+        name: 'TESCO',
+        url: 'https://www.tesco.com/fuel_prices/fuel_prices_data.json'
     }
-    // Add other retailers here
 ];
 
 export class FuelPriceFetcher {
