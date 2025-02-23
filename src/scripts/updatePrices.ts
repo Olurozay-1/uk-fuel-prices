@@ -1,6 +1,6 @@
-import { FuelPriceFetcher } from '../lib/fuelPriceFetcher';
-import { supabase } from '../lib/supabase';
-import { Station } from '../types';
+import { FuelPriceFetcher } from '../lib/fuelPriceFetcher.js';
+import { supabase } from '../lib/supabase.js';
+import { Station } from '../types/index.js';
 
 async function calculateNationalAverages(stations: Station[]) {
     const prices = {
@@ -75,7 +75,7 @@ export async function updateDatabase() {
     }
 }
 
-// Run the update if called directly
-if (require.main === module) {
+// Run the update if this is the main module
+if (import.meta.url === new URL(import.meta.url).href) {
     updateDatabase().then(() => process.exit(0));
 }
