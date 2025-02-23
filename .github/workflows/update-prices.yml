@@ -24,6 +24,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
-      - name: Run update prices
-        run: npm run update-prices
-    
+      - name: Run updatePrices script
+        run: npx ts-node -r tsconfig-paths/register src/scripts/updatePrices.ts
