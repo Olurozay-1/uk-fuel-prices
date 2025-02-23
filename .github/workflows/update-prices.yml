@@ -25,4 +25,4 @@ jobs:
         run: npm ci
         
       - name: Run updatePrices script
-        run: npx ts-node -r tsconfig-paths/register src/scripts/updatePrices.ts
+        run: npx ts-node --loader ts-node/esm src/scripts/updatePrices.ts
