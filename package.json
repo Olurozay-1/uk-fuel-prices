@@ -4,7 +4,8 @@
     "update-prices": "ts-node src/scripts/updatePrices.ts"
   },
   "devDependencies": {
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.1",
