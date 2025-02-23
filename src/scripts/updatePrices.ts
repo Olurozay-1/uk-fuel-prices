@@ -2,6 +2,23 @@ import { FuelPriceFetcher } from '../lib/fuelPriceFetcher';
 import { supabase } from '../lib/supabase';
 import { Station } from '../types/index';
 
+// Helper function to convert "DD/MM/YYYY HH:mm:ss" to "YYYY-MM-DD HH:mm:ss"
+function reformatDate(dateStr: string): string {
+  // If the date string contains a slash, assume it's in DD/MM/YYYY format.
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split(' ');
+    if (parts.length < 2) return dateStr; // safeguard
+    const datePart = parts[0]; // e.g. "23/02/2025"
+    const timePart = parts[1]; // e.g. "11:51:52"
+    const dateParts = datePart.split('/');
+    if (dateParts.length !== 3) return dateStr;
+    const [day, month, year] = dateParts;
+    return `${year}-${month}-${day} ${timePart}`;
+  }
+  // If already in the expected format, just return it.
+  return dateStr;
+}
+
 async function calculateNationalAverages(stations: Station[]) {
   const prices = {
     E5: [] as number[],
@@ -31,38 +48,46 @@ async function calculateNationalAverages(stations: Station[]) {
 
 export async function updateDatabase() {
   const fetcher = new FuelPriceFetcher();
-
+  
   try {
     console.log('Starting price update...');
     const data = await fetcher.fetchAllRetailers();
 
-    // Deduplicate stations based on the unique site_id
-    const stations = data.stations;
+    // Deduplicate stations based on unique site_id, if necessary.
+    const stations: Station[] = data.stations;
     const uniqueStations = Array.from(new Map(stations.map(station => [station.site_id, station])).values());
 
-    // Update stations in batches
+    // Process stations in batches.
     const batchSize = 100;
-
+    
     for (let i = 0; i < uniqueStations.length; i += batchSize) {
       const batch = uniqueStations.slice(i, i + batchSize);
 
+      // Reformat the date fields and location data.
+      const formattedBatch = batch.map(station => {
+        const formattedStation: any = {
+          ...station,
+          location: `SRID=4326;POINT(${station.location.coordinates[0]} ${station.location.coordinates[1]})`
+        };
+
+        // Convert the date field if present (adjust field name if necessary)
+        if (station.last_update && typeof station.last_update === 'string') {
+          formattedStation.last_update = reformatDate(station.last_update);
+        }
+        return formattedStation;
+      });
+      
       const { error } = await supabase
         .from('stations')
-        .upsert(
-          batch.map(station => ({
-            ...station,
-            location: `SRID=4326;POINT(${station.location.coordinates[0]} ${station.location.coordinates[1]})`
-          })),
-          { onConflict: 'site_id' }
-        );
-
+        .upsert(formattedBatch, { onConflict: 'site_id' });
+        
       if (error) {
         console.error('Error updating batch:', error);
         continue;
       }
     }
 
-    // Update national averages using the deduplicated list
+    // Update national averages using the deduplicated station list.
     const averages = await calculateNationalAverages(uniqueStations);
     const { error: avgError } = await supabase
       .from('national_averages')
@@ -78,7 +103,7 @@ export async function updateDatabase() {
   }
 }
 
-// Run the update if this is the main module
+// Run the update if this is the main module.
 if (import.meta.url === new URL(import.meta.url).href) {
   updateDatabase().then(() => process.exit(0));
 }
