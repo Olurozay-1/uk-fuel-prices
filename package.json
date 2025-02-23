@@ -1,11 +1,10 @@
 {
   "type": "module",
   "scripts": {
-    "update-prices": "node --loader ts-node/esm --experimental-specifier-resolution=node src/scripts/updatePrices.ts"
+    "update-prices": "ts-node --esm src/scripts/updatePrices.ts"
   },
   "devDependencies": {
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0"
+    "ts-node": "^10.9.2"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.1",

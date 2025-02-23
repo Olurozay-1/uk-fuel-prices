@@ -25,4 +25,5 @@ jobs:
         run: npm ci
         
       - name: Run update prices
-        run: node --loader ts-node/esm --experimental-specifier-resolution=node src/scripts/updatePrices.ts
+        run: npm run update-prices
+    
